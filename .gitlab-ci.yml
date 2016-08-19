@@ -1,0 +1,14 @@
+stages:
+  - test
+
+eslint:
+  stage: test
+  image: node:6
+  cache:
+    paths:
+      - node_modules/
+  script:
+    - npm install --quiet eslint-config-closedinterval@$(node -p 'require("./package.json").devDependencies["eslint-config-closedinterval"]')
+    - npm run -s eslint
+  tags:
+    - docker

@@ -5,5 +5,10 @@
 ## Install
 
 ```sh
-npm install --save git+ssh://git@git.weikinhuang.com:8722/closedinterval/webpack-config.git
+npm install --save git+https://git.weikinhuang.com/closedinterval/webpack-config.git
+```
+
+```sh
+// Also install required peer dependencies
+npm install --save webpack@1
 ```
