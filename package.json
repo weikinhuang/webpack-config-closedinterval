@@ -1,6 +1,6 @@
 {
   "name": "webpack-config-closedinterval",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Generic webpack 2 config for ClosedInterval",
   "main": "index.js",
   "scripts": {
