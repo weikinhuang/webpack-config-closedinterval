@@ -18,6 +18,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 // for babel specific configurations
 process.env.BABEL_ENV = process.env.NODE_ENV;
 
+// generalized set of default loader configurations
+const loaders = require('./loaders');
+
 // setup webpack plugins
 const plugins = [
   new webpack.EnvironmentPlugin([
@@ -130,51 +133,7 @@ module.exports = {
     }
   },
   module: {
-    rules: [
-      {
-        test: /\.html$/i,
-        loader: 'html'
-      },
-      {
-        test: /\.(jpe?g|png|gif|svg)$/i,
-        loaders: [
-          {
-            loader: 'file',
-            query: {
-              hash: 'sha512',
-              digest: 'hex',
-              name: '[name].[hash].[ext]'
-            }
-          },
-          {
-            loader: 'image-webpack',
-            query: {
-              bypassOnDebug: true,
-              optimizationLevel: 7,
-              interlaced: true
-            }
-          }
-        ]
-      },
-      {
-        test: /\.css$/i,
-        loaders: cssLoader
-      },
-      {
-        test: /\.json$/i,
-        loader: 'json'
-      },
-      {
-        test: /\.jsx?$/i,
-        exclude: /(?:node_modules)/,
-        loader: 'babel'
-      },
-      {
-        // @see https://github.com/webpack/worker-loader
-        test: /\.worker\.js$/i,
-        loader: 'worker'
-      }
-    ]
+    rules: loaders
   },
   plugins: plugins
 };
