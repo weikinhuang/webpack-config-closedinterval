@@ -4,7 +4,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const WebpackSubresourceIntegrity = require('webpack-subresource-integrity');
 const UnusedFilesWebpackPlugin = require('unused-files-webpack-plugin').UnusedFilesWebpackPlugin;
-const autoprefixer = require('autoprefixer');
+const postcssAdvancedVariables = require('postcss-advanced-variables');
+const postcssNested = require('postcss-nested');
+const postcssAtRoot = require('postcss-atroot');
+const postcssCssnext = require('postcss-cssnext');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'development';
@@ -39,8 +43,35 @@ const plugins = [
     globOptions: {
       cwd: path.join(process.cwd(), 'app')
     }
+  }),
+  new webpack.LoaderOptionsPlugin({
+    options: {
+      postcss: function() {
+        return [
+          postcssAdvancedVariables,
+          postcssAtRoot,
+          postcssNested,
+          postcssCssnext,
+        ];
+      }
+    }
   })
 ];
+
+var cssLoader = [
+  'style',
+  {
+    loader: 'css',
+    query: {
+      minimize: isProduction,
+      sourceMap: !isProduction,
+      context: '/',
+      camelCase: true
+    }
+  },
+  'postcss'
+];
+
 if (isProduction) {
   plugins.push(new webpack.DefinePlugin({
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
@@ -55,10 +86,15 @@ if (isProduction) {
     minimize: true,
     debug: false
   }));
+
+  // extract css into separate files
+  plugins.push(new ExtractTextPlugin({ filename: '[name].[hash].css' }));
+  cssLoader = ExtractTextPlugin.extract(cssLoader.filter((loader) => (loader.loader || loader) !== 'style'));
 }
 
+
 module.exports = {
-  devtool: !isProduction ? 'cheap-module-eval-source-map' : null,
+  devtool: !isProduction ? 'cheap-module-eval-source-map' : false,
   entry: {
     index: './app/index.js',
     vendor: [
@@ -69,7 +105,7 @@ module.exports = {
     ]
   },
   output: {
-    filename: '[name].js',
+    filename: '[name].[hash].js',
     path: path.resolve('public'),
     crossOriginLoading: 'anonymous',
     publicPath: '/'
@@ -86,7 +122,7 @@ module.exports = {
       styles: path.resolve('app/styles'),
       templates: path.resolve('app/templates')
     },
-    extensions: ['', '.js', '.jsx', '.json', '.css', '.scss']
+    extensions: ['.js', '.jsx', '.json', '.css', '.scss']
   },
   resolveLoader: {
     alias: {
@@ -94,13 +130,7 @@ module.exports = {
     }
   },
   module: {
-    preLoaders: [
-      {
-        test: /.scss$/i,
-        loader: 'import-glob'
-      }
-    ],
-    loaders: [
+    rules: [
       {
         test: /\.html$/i,
         loader: 'html'
@@ -128,40 +158,7 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        loaders: [
-          'style',
-          {
-            loader: 'css',
-            query: {
-              minimize: isProduction,
-              sourceMap: !isProduction
-            }
-          },
-          'postcss'
-        ]
-      },
-      {
-        test: /\.scss$/i,
-        loaders: [
-          'style',
-          {
-            loader: 'css',
-            query: {
-              minimize: isProduction,
-              sourceMap: !isProduction
-            }
-          },
-          'postcss',
-          {
-            loader: 'sass',
-            query: {
-              sourceMap: !isProduction,
-              includePaths: [
-                path.resolve('app/styles')
-              ]
-            }
-          }
-        ]
+        loaders: cssLoader
       },
       {
         test: /\.json$/i,
@@ -174,13 +171,10 @@ module.exports = {
       },
       {
         // @see https://github.com/webpack/worker-loader
-        test: /worker\.js$/i,
+        test: /\.worker\.js$/i,
         loader: 'worker'
       }
     ]
-  },
-  postcss: function() {
-    return [autoprefixer({ browsers: ['last 2 versions'] })];
   },
   plugins: plugins
 };

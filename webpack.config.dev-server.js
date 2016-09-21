@@ -1,6 +1,7 @@
 /* eslint no-sync: off */
 const fs = require('fs');
 const path = require('path');
+const webpack = require('webpack');
 const WebpackSubresourceIntegrity = require('webpack-subresource-integrity');
 const webpackConfig = require('./webpack.config');
 
@@ -17,6 +18,8 @@ webpackConfig.output.publicPath = `https://${DEV_DOMAIN}/`;
 webpackConfig.plugins = webpackConfig.plugins.filter(function(plugin) {
   return !(plugin instanceof WebpackSubresourceIntegrity);
 });
+// show names when using HMR
+webpackConfig.plugins.push(new webpack.NamedModulesPlugin());
 
 // dev server qconfig
 webpackConfig.devServer = {
